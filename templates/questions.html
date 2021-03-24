@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Questions</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/easy.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/form-style1.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-ui.min.css') }}">
+	<style>
+		.login {
+			width: 25%;
+		}
+
+		.table {
+			width: 75%;
+		}
+		a, a:focus, a:visited, a:hover {
+			color: #000;
+		}
+	</style>
+</head>
+<body>
+	<div id="app">
+		<div class="top-nav" id="top-nav1">
+		  <a href="index.html">Home</a>
+		  <a href="#" data-bind="click: showQuestions()">Questions</a>
+		  <a href="javascript:void(0);" class="icon" onclick="toggleMenu()">
+		    <i class="fa fa-bars"></i>
+		  </a>
+		</div>
+		<div class="container" data-bind="visible: questions_visible()">
+			<h3>Questions</h3>
+			<div id="questions">
+				
+			</div>
+		</div>
+	</div>
+	<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+  	<script src="{{ url_for('static', filename='js/jquery-ui.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/easy.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/knockout.js') }}"></script>
+	<script>
+		function toggleMenu() {
+		    var x = document.getElementById("top-nav1");
+		    if (x.className === "top-nav") {
+		        x.className += " responsive";
+		    } else {
+		        x.className = "top-nav";
+		    }
+		}
+
+		function sortQuestions(data) {
+			data.sort(function(a, b) { 
+				return a[2] - b[2]; 
+			});
+
+			var obj = {};
+
+			$.each(data, function(i, val) {
+				if (!obj.hasOwnProperty(val[2])) {
+					obj[val[2]] = [];
+					obj[val[2]].push(val)
+				}
+				else {
+					obj[val[2]].push(val)
+				}
+			});
+
+			return obj;
+		}
+
+		
+
+		function DashboardViewModel() {
+			var self = this;
+			self.questions_visible = ko.observable(false);
+			self.reddit_visible = ko.observable(false);
+
+			self.load = function() {
+				$.get("/get/questions", {user: "{{ data.user }}", token: "{{ data.token }}"})
+				.done(function(data) {
+					if (data.length > 0) {
+						data = sortQuestions(data);
+						$.each(Object.keys(data), function(k, val) {
+							$("#questions").append(
+								'<h3>' + data[val][0][1] + ' - ' + data[val][0][2] + '</h3>' +
+								'<div><ul id="'+data[val][0][0]+'">'
+							);
+							
+							$.each(data[val], function(i, val2) {
+								$("#" + data[val][0][0]).append(
+									'<li>' +
+									'<a href="' + val2[4] + '">' + val2[3] + '</a>' +
+									'</li>'
+								);
+							});
+							$("#questions").append('</ul></div>');
+						});
+						$( "#questions" ).accordion({heightStyle: "content", collapsible: true, active: false, header: 'h3'});
+					}
+				});
+			}
+
+			self.showQuestions = function() {
+				self.questions_visible(true);
+			}
+
+			self.load();
+		}
+		ko.applyBindings(new DashboardViewModel(), document.getElementById("dashboard"));
+	</script>
+</body>
+</html>
