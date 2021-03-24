@@ -77,7 +77,7 @@
 			self.reddit_visible = ko.observable(false);
 
 			self.load = function() {
-				$.get("/get/questions", {user: "{{ data.user }}", token: "{{ data.token }}"})
+				$.get("/get/questions")
 				.done(function(data) {
 					if (data.length > 0) {
 						data = sortQuestions(data);
