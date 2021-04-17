@@ -57,15 +57,20 @@
 			var obj = {};
 
 			$.each(data, function(i, val) {
-				if (!obj.hasOwnProperty(val[2])) {
-					obj[val[2]] = [];
-					obj[val[2]].push(val)
+				if (!obj.hasOwnProperty(val[1])) {
+					obj[val[1]] = {};
+				}
+				if (val[2] == "") {
+					val[2] = "Unsorted"
+				}
+				if (!obj[val[1]].hasOwnProperty(val[2])) {
+					obj[val[1]][val[2]] = [];
+					obj[val[1]][val[2]].push(val);
 				}
 				else {
-					obj[val[2]].push(val)
+					obj[val[1]][val[2]].push(val);
 				}
 			});
-
 			return obj;
 		}
 
@@ -82,19 +87,20 @@
 					if (data.length > 0) {
 						data = sortQuestions(data);
 						$.each(Object.keys(data), function(k, val) {
-							$("#questions").append(
-								'<h3>' + data[val][0][1] + ' - ' + data[val][0][2] + '</h3>' +
-								'<div><ul id="'+data[val][0][0]+'">'
-							);
-							
-							$.each(data[val], function(i, val2) {
-								$("#" + data[val][0][0]).append(
-									'<li>' +
-									'<a href="' + val2[4] + '">' + val2[3] + '</a>' +
-									'</li>'
+							$.each(Object.keys(data[val]), function(i, val2){
+								$("#questions").append(
+									'<h3>' + val + ' - ' + val2 + '</h3>' +
+									'<div><ul id="'+data[val][val2][0][0]+'">'
 								);
+								$.each(data[val][val2], function(i, val3) {
+									$("#" + data[val][val2][0][0]).append(
+										'<li>' +
+										'<a href="' + val3[4] + '">' + val3[3] + '</a>' +
+										'</li>'
+									);
+								});
+								$("#questions").append('</ul></div>');
 							});
-							$("#questions").append('</ul></div>');
 						});
 						$( "#questions" ).accordion({heightStyle: "content", collapsible: true, active: false, header: 'h3'});
 					}
