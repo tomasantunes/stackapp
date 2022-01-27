@@ -3,7 +3,7 @@ Display questions from Stackexchange
 
 ## How to run
 
-- Run this command: pip install flask
+- Run this command: pip install flask requests
 - Change the BASE_DIR variable to the directory of the app.
 - Insert your Stackexchange API key at the KEY variable.
 - Change the tags variable in the file questions.py to include the tags you are looking for.
