@@ -76,7 +76,7 @@
 
 		
 
-		function DashboardViewModel() {
+		function AppViewModel() {
 			var self = this;
 			self.questions_visible = ko.observable(false);
 			self.reddit_visible = ko.observable(false);
@@ -113,7 +113,7 @@
 
 			self.load();
 		}
-		ko.applyBindings(new DashboardViewModel(), document.getElementById("dashboard"));
+		ko.applyBindings(new AppViewModel(), document.getElementById("app"));
 	</script>
 </body>
 </html>
