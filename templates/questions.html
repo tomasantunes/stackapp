@@ -18,6 +18,11 @@
 			color: #000;
 		}
 	</style>
+
+	<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+	<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+	<link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+	<link rel="manifest" href="{{ url_for('static', filename='favicon/site.webmanifest') }}">
 </head>
 <body>
 	<div id="app">
@@ -37,6 +42,12 @@
 		</div>
 		<div class="container" data-bind="visible: stats_visible()">
 			<h3>Total Questions: <span data-bind="text: total_questions"></span></h3>
+			<h3>Total Sites: <span data-bind="text: total_sites"></span></h3>
+			<h3>Total Tags: <span data-bind="text: total_tags"></span></h3>
+			<h3>Total by site:</h3>
+			<p data-bind="html: total_by_site"></p>
+			<h3>Total by tag:</h3>
+			<p data-bind="html: total_by_tag"></p>
 		</div>
 	</div>
 	<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
@@ -85,6 +96,10 @@
 			self.questions_visible = ko.observable(false);
 			self.stats_visible = ko.observable(false);
 			self.total_questions = ko.observable();
+			self.total_by_tag = ko.observable();
+			self.total_by_site = ko.observable();
+			self.total_sites = ko.observable();
+			self.total_tags = ko.observable();
 
 			self.load = function() {
 				$.get("/get/questions")
@@ -108,6 +123,27 @@
 							});
 						});
 						$( "#questions" ).accordion({heightStyle: "content", collapsible: true, active: false, header: 'h3'});
+						console.log(data);
+						var total_sites = 0;
+						var total_tags = 0;
+						var total_by_tag = "";
+						var total_by_site = "";
+						$.each(Object.keys(data), function(i, val) {
+							total_sites += 1;
+							var site_questions_count = 0;
+							$.each(Object.keys(data[val]), function(i, val2){
+								total_tags += 1;
+								var tag_total = "<b>" + val + ' - ' + val2 + ' - ' + "</b>" + data[val][val2].length;
+								site_questions_count += data[val][val2].length;
+								total_by_tag += tag_total + "<br>";
+							});
+							var site_total = "<b>" + val + " - " + "</b>" + site_questions_count;
+							total_by_site += site_total + "<br>";
+						});
+						self.total_by_tag(total_by_tag);
+						self.total_by_site(total_by_site);
+						self.total_sites(total_sites);
+						self.total_tags(total_tags);
 					}
 					self.questions_visible(false);
 					self.stats_visible(false);
