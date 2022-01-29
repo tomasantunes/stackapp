@@ -46,6 +46,7 @@ for k in questions_obj.keys():
 				for id in i:
 					if str(c['post_id']) == id:
 						if id not in questions_to_delete:
+							print("This question has comments.")
 							questions_to_delete.append(id)
 		else:
 			print("No comments found.")
@@ -53,10 +54,17 @@ for k in questions_obj.keys():
 
 		if "items" in questions and len(questions) > 0:
 			print("Found questions")
+			ids_returned = []
 			for q in questions["items"]:
+				ids_returned.append(str(q["question_id"]))
 				if "closed_date" in q or q['answer_count'] > 0 or q["creation_date"] > int(compare_date.timestamp()):
 					if str(q["question_id"]) not in questions_to_delete:
+						print("This question has answers or is closed or is too recent.")
 						questions_to_delete.append(str(q["question_id"]))
+			for id in i:
+				if str(id) not in ids_returned:
+					print("This question has a 404 error.")
+					questions_to_delete.append(str(id))
 		else:
 			print("No questions found")
 
