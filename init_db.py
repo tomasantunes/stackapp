@@ -1,6 +1,6 @@
 import sqlite3
 
-connection = sqlite3.connect('life_points.db')
+connection = sqlite3.connect('stackexchange.db')
 
 
 with open('schema.sql') as f:
