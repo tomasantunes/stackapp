@@ -16,9 +16,16 @@ def connect_stackexchange_db():
 @app.route('/get/questions')
 def get_all_questions():
 	db = connect_stackexchange_db()
-	cur = db.execute('select * from questions')
+	cur = db.execute('SELECT * FROM questions')
 	questions = cur.fetchall()
 	return jsonify(questions)
+
+@app.route('/get/stats')
+def get_stats():
+	db = connect_stackexchange_db()
+	cur = db.execute('SELECT COUNT(*) FROM questions')
+	total_questions = cur.fetchone()[0]
+	return jsonify({"total_questions": total_questions})
 
 @app.route('/')
 def home():

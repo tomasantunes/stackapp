@@ -24,6 +24,7 @@
 		<div class="top-nav" id="top-nav1">
 		  <a href="/">Home</a>
 		  <a href="#" data-bind="click: showQuestions()">Questions</a>
+		  <a href="#" data-bind="click: showStats()">Stats</a>
 		  <a href="javascript:void(0);" class="icon" onclick="toggleMenu()">
 		    <i class="fa fa-bars"></i>
 		  </a>
@@ -33,6 +34,9 @@
 			<div id="questions">
 				
 			</div>
+		</div>
+		<div class="container" data-bind="visible: stats_visible()">
+			<h3>Total Questions: <span data-bind="text: total_questions"></span></h3>
 		</div>
 	</div>
 	<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
@@ -79,7 +83,8 @@
 		function AppViewModel() {
 			var self = this;
 			self.questions_visible = ko.observable(false);
-			self.reddit_visible = ko.observable(false);
+			self.stats_visible = ko.observable(false);
+			self.total_questions = ko.observable();
 
 			self.load = function() {
 				$.get("/get/questions")
@@ -105,11 +110,23 @@
 						$( "#questions" ).accordion({heightStyle: "content", collapsible: true, active: false, header: 'h3'});
 					}
 					self.questions_visible(false);
+					self.stats_visible(false);
+				});
+				$.get("/get/stats")
+				.done(function(data) {
+					console.log(data);
+					self.total_questions(data["total_questions"]);
 				});
 			}
 
 			self.showQuestions = function() {
+				self.stats_visible(false);
 				self.questions_visible(true);
+			}
+
+			self.showStats = function() {
+				self.questions_visible(false);
+				self.stats_visible(true);
 			}
 
 			self.load();
