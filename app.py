@@ -27,6 +27,16 @@ def get_stats():
 	total_questions = cur.fetchone()[0]
 	return jsonify({"total_questions": total_questions})
 
+@app.route("/update-question-status")
+def update_question_status():
+	id = request.args.get("id")
+	status = request.args.get("newStatus")
+	db = connect_stackexchange_db()
+	cur = db.execute('UPDATE questions SET status = ? WHERE question_id = ?', (status, id))
+	db.commit()
+	db.close()
+	return "OK"
+
 @app.route('/')
 def home():
 	return render_template('questions.html')

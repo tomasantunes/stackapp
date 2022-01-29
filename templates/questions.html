@@ -17,6 +17,12 @@
 		a, a:focus, a:visited, a:hover {
 			color: #000;
 		}
+		ul li {
+			list-style-type: none;
+		}
+		table {
+			margin-bottom: 0 !important;
+		}
 	</style>
 
 	<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
@@ -36,8 +42,22 @@
 		</div>
 		<div class="container" data-bind="visible: questions_visible()">
 			<h3>Questions</h3>
-			<div id="questions">
-				
+			<div id="questions" data-bind="foreach: tags">
+				<h3 data-bind="text: tag_title"></h3>
+				<div>
+					<ul data-bind="attr: {id: tag_id}, foreach: questions">
+						<li>
+							<table>
+								<tbody>
+									<tr>
+										<td style="width: 75%"><a data-bind="attr: {href: link}, html: title"></a></td>
+										<td style="width: 25%"><select data-bind="options: $root.statuses, value: selectedStatus, optionsCaption: 'Choose...', event:{ change: updateQuestionStatus}"></select></td>
+									</tr>
+								</tbody>
+							</table>
+						</li>
+					</ul>
+				</div>
 			</div>
 		</div>
 		<div class="container" data-bind="visible: stats_visible()">
@@ -100,6 +120,37 @@
 			self.total_by_site = ko.observable();
 			self.total_sites = ko.observable();
 			self.total_tags = ko.observable();
+			self.tags = ko.observableArray();
+			self.statuses = ko.observableArray(["Impossible", "TODO", "Done"]);
+
+			self.TagModel = function(t) {
+				var tm = this;
+				tm.tag_title = ko.observable(t.tag_title);
+				tm.tag_id = ko.observable(t.tag_id);
+				tm.questions = ko.observableArray();
+
+				tm.QuestionModel = function(q) {
+					var qm = this;
+					qm.id = ko.observable(q.id);
+					qm.link = ko.observable(q.link);
+					qm.title = ko.observable(q.title);
+					qm.selectedStatus = ko.observable(q.status);
+
+					qm.updateQuestionStatus = function() {
+						$.get("/update-question-status", {newStatus: qm.selectedStatus(), id: qm.id()});
+					}
+				}
+
+				tm.loadQuestions = function() {
+					$.each(t.questions, function(i, val) {
+						tm.questions.push(new tm.QuestionModel(val));
+					});
+				}
+
+				tm.loadQuestions();
+			}
+
+			
 
 			self.load = function() {
 				$.get("/get/questions")
@@ -108,22 +159,20 @@
 						data = sortQuestions(data);
 						$.each(Object.keys(data), function(k, val) {
 							$.each(Object.keys(data[val]), function(i, val2){
-								$("#questions").append(
-									'<h3>' + val + ' - ' + val2 + '</h3>' +
-									'<div><ul id="'+data[val][val2][0][0]+'">'
-								);
+								var tag = {
+									"tag_title": val + ' - ' + val2,
+									"tag_id": data[val][val2][0][0],
+									"questions": []
+								};
+
 								$.each(data[val][val2], function(i, val3) {
-									$("#" + data[val][val2][0][0]).append(
-										'<li>' +
-										'<a href="' + val3[3] + '">' + val3[4] + '</a>' +
-										'</li>'
-									);
+									tag.questions.push({"id": val3[0], "link": val3[3], "title": val3[4], "status": val3[6]});
 								});
-								$("#questions").append('</ul></div>');
+
+								self.tags.push(new self.TagModel(tag));
 							});
 						});
 						$( "#questions" ).accordion({heightStyle: "content", collapsible: true, active: false, header: 'h3'});
-						console.log(data);
 						var total_sites = 0;
 						var total_tags = 0;
 						var total_by_tag = "";
@@ -150,7 +199,6 @@
 				});
 				$.get("/get/stats")
 				.done(function(data) {
-					console.log(data);
 					self.total_questions(data["total_questions"]);
 				});
 			}

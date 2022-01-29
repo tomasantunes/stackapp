@@ -6,3 +6,5 @@ CREATE TABLE questions(
     title text NOT NULL,
     date date
 );
+
+ALTER TABLE questions ADD COLUMN status TEXT;
