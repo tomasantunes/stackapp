@@ -79,7 +79,7 @@ for tag in tags:
 			cur = db.execute('select * from questions WHERE question_id = ?', [question['question_id']])
 			questions = cur.fetchall()
 			if (len(questions) < 1):
-				db.execute('INSERT INTO questions (question_id, site, tag, link, title, date) VALUES (?, ?, ?, ?, ?, ?)', [question['question_id'], str(tag['site']), str(tag['tag']), str(question["title"]), question['link'], question['creation_date']])
+				db.execute('INSERT INTO questions (question_id, site, tag, link, title, date) VALUES (?, ?, ?, ?, ?, ?)', [question['question_id'], str(tag['site']), str(tag['tag']), question['link'], str(question["title"]), question['creation_date']])
 				db.commit()
 		print("Questions have been saved to database.")
 	else:
