@@ -62,12 +62,16 @@
 		</div>
 		<div class="container" data-bind="visible: stats_visible()">
 			<h3>Total Questions: <span data-bind="text: total_questions"></span></h3>
+			<h3>Can't Do: <span data-bind="text: total_cant_do() + '(' + cant_do_percentage() + '%)'"></span></h3>
+			<h3>TODO: <span data-bind="text: total_todo() + '(' + todo_percentage() + '%)'"></span></h3>
 			<h3>Total Sites: <span data-bind="text: total_sites"></span></h3>
 			<h3>Total Tags: <span data-bind="text: total_tags"></span></h3>
 			<h3>Total by site:</h3>
 			<p data-bind="html: total_by_site"></p>
 			<h3>Total by tag:</h3>
 			<p data-bind="html: total_by_tag"></p>
+			<h3>Status by tag:</h3>
+			<p data-bind="html: status_by_tag"></p>
 		</div>
 	</div>
 	<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
@@ -122,6 +126,11 @@
 			self.total_tags = ko.observable();
 			self.tags = ko.observableArray();
 			self.statuses = ko.observableArray(["I can't do this", "TODO", "Done"]);
+			self.total_cant_do = ko.observable();
+			self.total_todo = ko.observable();
+			self.cant_do_percentage = ko.observable();
+			self.todo_percentage = ko.observable();
+			self.status_by_tag = ko.observable();
 
 			self.TagModel = function(t) {
 				var tm = this;
@@ -157,6 +166,10 @@
 				.done(function(data) {
 					if (data.length > 0) {
 						data = sortQuestions(data);
+						var status_by_tag = "";
+						var total_cant_do = 0;
+						var total_todo = 0;
+						var total_questions = 0;
 						$.each(Object.keys(data), function(k, val) {
 							$.each(Object.keys(data[val]), function(i, val2){
 								var tag = {
@@ -165,9 +178,24 @@
 									"questions": []
 								};
 
+								
+								var count_todo = 0;
+								var count_cant_do = 0;
+								var count_questions = 0;
 								$.each(data[val][val2], function(i, val3) {
 									tag.questions.push({"id": val3[0], "link": val3[3], "title": val3[4], "status": val3[6]});
+									if (val3[6] == "I can't do this") {
+										count_cant_do += 1;
+										total_cant_do += 1;
+									}
+									else if (val3[6] == "TODO") {
+										count_todo += 1;
+										total_todo += 1;
+									}
+									count_questions += 1;
+									total_questions += 1;
 								});
+								status_by_tag += "<b>" + val + ' - ' + val2 + ' - </b>' + "CANT_DO: " + count_cant_do + "(" + (count_cant_do * 100 / count_questions).toFixed(0) + "%), TODO: " + count_todo + "(" + (count_todo * 100 / count_questions).toFixed(0) + "%)" + "<br>";
 
 								self.tags.push(new self.TagModel(tag));
 							});
@@ -190,9 +218,14 @@
 							total_by_site += site_total + "<br>";
 						});
 						self.total_by_tag(total_by_tag);
+						self.status_by_tag(status_by_tag);
 						self.total_by_site(total_by_site);
 						self.total_sites(total_sites);
 						self.total_tags(total_tags);
+						self.total_cant_do(total_cant_do);
+						self.total_todo(total_todo);
+						self.todo_percentage((total_todo * 100 / total_questions).toFixed(0));
+						self.cant_do_percentage((total_cant_do * 100 / total_questions).toFixed(0));
 					}
 					self.questions_visible(false);
 					self.stats_visible(false);
