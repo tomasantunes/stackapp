@@ -8,3 +8,4 @@ CREATE TABLE questions(
 );
 
 ALTER TABLE questions ADD COLUMN status TEXT;
+ALTER TABLE questions ADD COLUMN tags TEXT;

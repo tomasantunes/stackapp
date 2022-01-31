@@ -22,6 +22,11 @@
 		}
 		table {
 			margin-bottom: 0 !important;
+			table-layout: fixed;
+		}
+
+		td {
+			word-wrap: break-word;
 		}
 	</style>
 
@@ -50,8 +55,9 @@
 							<table>
 								<tbody>
 									<tr>
-										<td style="width: 75%"><a data-bind="attr: {href: link}, html: title"></a></td>
-										<td style="width: 25%"><select data-bind="options: $root.statuses, value: selectedStatus, optionsCaption: 'Choose...', event:{ change: updateQuestionStatus}"></select></td>
+										<td style="width: 60%;"><a data-bind="attr: {href: link}, html: title"></a></td>
+										<td style="width: 25%;"><p data-bind="text: tags"></p></td>
+										<td style="width: 15%;"><select data-bind="options: $root.statuses, value: selectedStatus, optionsCaption: 'Choose...', event:{ change: updateQuestionStatus}"></select></td>
 									</tr>
 								</tbody>
 							</table>
@@ -143,6 +149,7 @@
 					qm.id = ko.observable(q.id);
 					qm.link = ko.observable(q.link);
 					qm.title = ko.observable(q.title);
+					qm.tags = ko.observable(q.tags);
 					qm.selectedStatus = ko.observable(q.status);
 
 					qm.updateQuestionStatus = function() {
@@ -183,7 +190,7 @@
 								var count_cant_do = 0;
 								var count_questions = 0;
 								$.each(data[val][val2], function(i, val3) {
-									tag.questions.push({"id": val3[0], "link": val3[3], "title": val3[4], "status": val3[6]});
+									tag.questions.push({"id": val3[0], "link": val3[3], "title": val3[4], "status": val3[6], "tags": val3[7]});
 									if (val3[6] == "I can't do this") {
 										count_cant_do += 1;
 										total_cant_do += 1;
