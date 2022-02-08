@@ -17,11 +17,12 @@ cur = db.execute('SELECT * FROM questions WHERE site = ? AND tag = ?', (section[
 questions = cur.fetchall()
 
 for q in questions:
-    question_tags = q[7].split(",")
-    status = "I can't do this"
-    for t in question_tags:
-        if t in tags_to_exclude:
-            db.execute("UPDATE questions SET status = ? WHERE question_id = ?", (status, q[0]))
+    if q[7] != None:
+        question_tags = q[7].split(",")
+        status = "I can't do this"
+        for t in question_tags:
+            if t in tags_to_exclude:
+                db.execute("UPDATE questions SET status = ? WHERE question_id = ?", (status, q[0]))
 
 db.commit()
 db.close()
