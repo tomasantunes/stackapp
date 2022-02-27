@@ -204,6 +204,24 @@
 								});
 								status_by_tag += "<b>" + val + ' - ' + val2 + ' - </b>' + "CANT_DO: " + count_cant_do + "(" + (count_cant_do * 100 / count_questions).toFixed(0) + "%), TODO: " + count_todo + "(" + (count_todo * 100 / count_questions).toFixed(0) + "%)" + "<br>";
 
+								var order = {
+									"I can't do this": 0,
+									"Done": 1,
+									"TODO": 2,
+								}
+								tag.questions.sort(function(a, b) {
+									var a_status = order[a.status];
+									var b_status = order[b.status];
+
+									if (a.status == null) {
+										a_status = 3;
+									}
+									if (b.status == null) {
+										b_status = 3
+									}
+									return a_status - b_status;
+								});
+
 								self.tags.push(new self.TagModel(tag));
 							});
 						});
