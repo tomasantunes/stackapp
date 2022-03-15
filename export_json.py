@@ -15,7 +15,7 @@ questions = cur.fetchall()
   
 json_object = json.dumps(questions, indent = 4)
   
-with open("questions.json", "w") as outfile:
+with open("questions.json", "w", encoding="utf8") as outfile:
     outfile.write(json_object)
 
 print("Finished.")
