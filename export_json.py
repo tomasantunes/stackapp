@@ -11,7 +11,7 @@ db = connect_db()
 
 print("Starting.")
 db.row_factory = sqlite3.Row
-cur = db.execute('SELECT question_id, link, title, date, tags FROM questions')
+cur = db.execute('SELECT question_id, site, link, title, date, tags FROM questions')
 questions = cur.fetchall()
 questions = [dict(row) for row in questions]
   
