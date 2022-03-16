@@ -10,8 +10,10 @@ def connect_db():
 db = connect_db()
 
 print("Starting.")
-cur = db.execute('SELECT link, title FROM questions')
+db.row_factory = sqlite3.Row
+cur = db.execute('SELECT question_id, link, title, date, tags FROM questions')
 questions = cur.fetchall()
+questions = [dict(row) for row in questions]
   
 json_object = json.dumps(questions, indent = 4)
   
