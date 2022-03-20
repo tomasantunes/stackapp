@@ -1,0 +1,1 @@
+UPDATE questions SET site = "new_site" WHERE site = "old_site";
