@@ -1,8 +1,9 @@
 import sqlite3
 import json
+import os
 
-BASE_DIR = '/path/to/dir/'
-STACKEXCHANGE_DB = BASE_DIR + 'stackexchange.db'
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+STACKEXCHANGE_DB = os.path.join(BASE_DIR, 'stackexchange.db')
 
 def connect_db():
 	return sqlite3.connect(STACKEXCHANGE_DB)

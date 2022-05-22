@@ -1,10 +1,11 @@
 from flask import Flask, request, g, redirect, url_for, abort, render_template, session, jsonify
 import json
 import sqlite3
+import os
 
 DEBUG = False
-BASE_DIR = '/path/to/dir/'
-STACKEXCHANGE_DB = BASE_DIR + 'stackexchange.db'
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+STACKEXCHANGE_DB = os.path.join(BASE_DIR, 'stackexchange.db')
 
 app = Flask(__name__)
 app.config.from_object(__name__)

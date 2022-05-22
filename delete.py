@@ -1,9 +1,10 @@
 import requests
 import sqlite3
 from datetime import datetime, timedelta
+import os
 
-BASE_DIR = '/path/to/dir/'
-STACKEXCHANGE_DB = BASE_DIR + 'stackexchange.db'
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+STACKEXCHANGE_DB = os.path.join(BASE_DIR, 'stackexchange.db')
 BASEURL = "https://api.stackexchange.com/2.2/questions"
 KEY = ""
 
