@@ -15,7 +15,7 @@
 			width: 75%;
 		}
 		a, a:focus, a:visited, a:hover {
-			color: #000;
+			color: #fff;
 		}
 		ul li {
 			list-style-type: none;
@@ -28,6 +28,19 @@
 		td {
 			word-wrap: break-word;
 		}
+
+    .logo {
+      display: inline-block;
+      width: 45px;
+    }
+
+    .logo img {
+      width: 100%;
+    }
+
+    .menu {
+      display: inline-block;
+    }
 	</style>
 
 	<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
@@ -38,12 +51,17 @@
 <body>
 	<div id="app">
 		<div class="top-nav" id="top-nav1">
-		  <a href="/">Home</a>
-		  <a href="#" data-bind="click: showQuestions()">Questions</a>
-		  <a href="#" data-bind="click: showStats()">Stats</a>
-		  <a href="javascript:void(0);" class="icon" onclick="toggleMenu()">
-		    <i class="fa fa-bars"></i>
-		  </a>
+      <div class="logo">
+        <img src="{{ url_for('static', filename='images/logo.png') }}">
+      </div>
+      <div class="menu">
+        <a href="/">Home</a>
+        <a href="#" data-bind="click: showQuestions()">Questions</a>
+        <a href="#" data-bind="click: showStats()">Stats</a>
+        <a href="javascript:void(0);" class="icon" onclick="toggleMenu()">
+          <i class="fa fa-bars"></i>
+        </a>
+      </div>
 		</div>
 		<div class="container" data-bind="visible: questions_visible()">
 			<h3>Questions</h3>

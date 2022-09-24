@@ -1,6 +1,9 @@
 # stackapp
 Display questions from Stackexchange
 
+![Stackapp Screeshot 1](https://i.imgur.com/Yw4ds4R.png)
+![Stackapp Screeshot 2](https://i.imgur.com/wcuMnqG.png)
+
 ## How to run
 
 - Run this command: pip install flask requests
