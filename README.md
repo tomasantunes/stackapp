@@ -6,7 +6,7 @@ Display questions from Stackexchange
 
 ## How to run
 
-- Run this command: pip install flask flask-session requests
+- Run this command: pip install flask flask-session requests redis
 - Install Redis: sudo apt-get install redis-server
 - Run the init_db.py file to create the database.
 - Insert your Stackexchange API key at the KEY variable.
