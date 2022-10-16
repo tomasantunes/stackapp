@@ -6,9 +6,11 @@ Display questions from Stackexchange
 
 ## How to run
 
-- Run this command: pip install flask requests
+- Run this command: pip install flask flask-session requests
+- Install Redis: sudo apt-get install redis-server
 - Run the init_db.py file to create the database.
 - Insert your Stackexchange API key at the KEY variable.
+- Change your secret token on the config.py file
 - Change the tags variable in the file questions.py to include the tags you are looking for.
 - Run the questions.py file to fetch questions.
 - Run the delete.py file to delete questions that already have answers.
