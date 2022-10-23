@@ -7,5 +7,16 @@ CREATE TABLE questions(
     date date
 );
 
+CREATE TABLE sites(
+    site_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    site_url TEXT
+);
+
+CREATE TABLE tags(
+    tag_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    site_id INTEGER NOT NULL,
+    tag_title TEXT
+);
+
 ALTER TABLE questions ADD COLUMN status TEXT;
 ALTER TABLE questions ADD COLUMN tags TEXT;

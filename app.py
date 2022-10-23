@@ -26,12 +26,83 @@ def login(token):
 	else:
 		return jsonify({"status": "NOK", "data": "Invalid Authorization."})
 
+@app.route('/get/tags')
+def get_tags():
+	db = connect_stackexchange_db()
+	cur = db.execute('SELECT * FROM tags JOIN sites ON tags.site_id = sites.site_id')
+	questions = cur.fetchall()
+	return jsonify(questions)
+
+@app.route('/get/sites')
+def get_sites():
+	db = connect_stackexchange_db()
+	cur = db.execute('SELECT * FROM sites')
+	questions = cur.fetchall()
+	return jsonify(questions)
+
 @app.route('/get/questions')
 def get_all_questions():
 	db = connect_stackexchange_db()
 	cur = db.execute('SELECT * FROM questions')
 	questions = cur.fetchall()
 	return jsonify(questions)
+
+@app.route('/get/questions-by-tag')
+def get_questions_by_tag():
+	tag_id = request.args['tag_id']
+	site_id = request.args['site_id']
+	offset = request.args['offset']
+	print(offset)
+	db = connect_stackexchange_db()
+	cur = db.execute('SELECT questions.question_id, questions.link, questions.title, questions.date, questions.status, questions.tags FROM questions JOIN tags ON questions.tag = tags.tag_title JOIN sites ON questions.site = sites.site_url WHERE tags.tag_id = ? AND sites.site_id = ? ORDER BY status LIMIT 10 OFFSET ?', (tag_id, site_id, offset))
+	questions = cur.fetchall()
+	cur = db.execute("SELECT COUNT(*) FROM questions JOIN tags ON questions.tag = tags.tag_title JOIN sites ON questions.site = sites.site_url WHERE tags.tag_id = ? AND sites.site_id = ?", (tag_id, site_id))
+	count = cur.fetchone()[0]
+	result = {
+		"count": count,
+		"questions": questions
+	}
+	return jsonify(result)
+
+@app.route('/get/status-count')
+def get_status_count():
+	db = connect_stackexchange_db()
+	cur = db.execute("SELECT COUNT(*) FROM questions WHERE status = 'I can''t do this'")
+	cant_count = cur.fetchone()[0]
+	cur = db.execute("SELECT COUNT(*) FROM questions WHERE status = 'TODO'")
+	todo_count = cur.fetchone()[0]
+	result = {
+		"cant_count": cant_count,
+		"todo_count": todo_count
+	}
+	return jsonify(result)
+
+@app.route('/get/questions-count')
+def get_questions_count():
+	db = connect_stackexchange_db()
+	cur = db.execute("SELECT COUNT(*) FROM questions")
+	questions_count = cur.fetchone()[0]
+	result = {
+		"questions_count": questions_count
+	}
+	return jsonify(result)
+
+
+@app.route('/get/questions-by-site')
+def get_questions_by_site():
+	site_id = request.args['site_id']
+	offset = request.args['offset']
+	print(offset)
+	db = connect_stackexchange_db()
+	cur = db.execute('SELECT questions.question_id, questions.link, questions.title, questions.date, questions.status, questions.tags FROM questions JOIN sites ON questions.site = sites.site_url WHERE sites.site_id = ? ORDER BY status LIMIT 10 OFFSET ?', (site_id, offset))
+	questions = cur.fetchall()
+	cur = db.execute("SELECT COUNT(*) FROM questions JOIN sites ON questions.site = sites.site_url WHERE sites.site_id = ?", (site_id,))
+	count = cur.fetchone()[0]
+	result = {
+		"count": count,
+		"questions": questions
+	}
+	return jsonify(result)
 
 @app.route('/get/stats')
 def get_stats():

@@ -14,33 +14,42 @@
 		.table {
 			width: 75%;
 		}
-		a, a:focus, a:visited, a:hover {
+		.menu a, .menu a:focus, .menu a:visited, .menu a:hover {
 			color: #fff;
 		}
 		ul li {
 			list-style-type: none;
 		}
 		table {
-			margin-bottom: 0 !important;
 			table-layout: fixed;
+			margin-top: 25px;
+			margin-bottom: 25px;
 		}
 
 		td {
 			word-wrap: break-word;
 		}
 
-    .logo {
-      display: inline-block;
-      width: 45px;
-    }
+		a, a:focus, a:visited, a:hover {
+			color: #000;
+		}
 
-    .logo img {
-      width: 100%;
-    }
+		.logo {
+		display: inline-block;
+		width: 45px;
+		}
 
-    .menu {
-      display: inline-block;
-    }
+		.logo img {
+		width: 100%;
+		}
+
+		.menu {
+		display: inline-block;
+		}
+
+		button {
+			cursor: pointer !important;
+		}
 	</style>
 
 	<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
@@ -65,6 +74,25 @@
 		</div>
 		<div class="container" data-bind="visible: questions_visible()">
 			<h3>Questions</h3>
+			<select data-bind="foreach: tags2, value: currentTag">
+				<option data-bind="value: tag_id, text: tag_title"></option>
+			</select>
+
+			<table>
+				<tbody data-bind="foreach: currentQuestions">
+					<tr>
+						<td style="width: 60%;"><a data-bind="attr: {href: link}, html: title"></a></td>
+						<td style="width: 25%;"><p data-bind="text: tags"></p></td>
+						<td style="width: 15%;"><select data-bind="options: $root.statuses, value: selectedStatus, optionsCaption: 'Choose...', event:{ change: updateQuestionStatus}"></select></td>
+					</tr>
+				</tbody>
+			</table>
+			<div class="pager">
+				<button class="previous" data-bind="click: previous, visible: hasPrevious">Previous</button>
+				<button class="current" data-bind="text: $root.pageNumber"></button>
+				<button class="next" data-bind="click: next, visible: hasNext">Next</button>
+			</div>
+			<!--
 			<div id="questions" data-bind="foreach: tags">
 				<h3 data-bind="text: tag_title"></h3>
 				<div>
@@ -83,6 +111,7 @@
 					</ul>
 				</div>
 			</div>
+			-->
 		</div>
 		<div class="container" data-bind="visible: stats_visible()">
 			<h3>Total Questions: <span data-bind="text: total_questions"></span></h3>
@@ -94,8 +123,10 @@
 			<p data-bind="html: total_by_site"></p>
 			<h3>Total by tag:</h3>
 			<p data-bind="html: total_by_tag"></p>
+			<!--
 			<h3>Status by tag:</h3>
 			<p data-bind="html: status_by_tag"></p>
+			-->
 		</div>
 	</div>
 	<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
@@ -155,6 +186,55 @@
 			self.cant_do_percentage = ko.observable();
 			self.todo_percentage = ko.observable();
 			self.status_by_tag = ko.observable();
+			self.pageNumber = ko.observable(0);
+			self.currentTag = ko.observable();
+			self.currentQuestions = ko.observableArray();
+			self.currentQuestionsCount = ko.observable();
+			self.tags2 = ko.observableArray();
+			self.offset = ko.observable(0);
+			
+			self.totalPages = ko.computed(function() {
+				var div = Math.floor(self.currentQuestionsCount() / 10);
+				div += self.currentQuestionsCount() % 10 > 0 ? 1 : 0;
+				return div - 1;
+			});
+
+			self.hasPrevious = ko.computed(function() {
+				return self.pageNumber() !== 0;
+			});
+
+			self.hasNext = ko.computed(function() {
+				return self.pageNumber() !== self.totalPages();
+			});
+
+			self.next = function() {
+				if(self.pageNumber() < self.totalPages()) {
+					self.pageNumber(self.pageNumber() + 1);
+					self.offset(self.pageNumber() * 10);
+					self.loadQuestionsByTag(self.currentTag());
+				}
+			}
+
+			self.previous = function() {
+				if(self.pageNumber() != 0) {
+					self.pageNumber(self.pageNumber() - 1);
+					self.offset(self.pageNumber() * 10);
+					self.loadQuestionsByTag(self.currentTag());
+				}
+			}
+
+			self.currentTag.subscribe(function(tag) {
+				console.log("Tag has changed.");
+				console.log(tag);
+				self.loadQuestionsByTag(tag);
+			}, self);
+
+			self.TagModel2 = function(t) {
+				var tm2 = this;
+				tm2.tag_title = ko.observable(t.tag_title);
+				tm2.tag_id = ko.observable(t.tag_id);
+				tm2.site_id = ko.observable(t.site_id);
+			}
 
 			self.TagModel = function(t) {
 				var tm = this;
@@ -184,8 +264,59 @@
 				tm.loadQuestions();
 			}
 
-			
+			self.QuestionModel = function(q) {
+				var qm = this;
+				qm.id = ko.observable(q.id);
+				qm.link = ko.observable(q.link);
+				qm.title = ko.observable(q.title);
+				qm.tags = ko.observable(q.tags);
+				qm.selectedStatus = ko.observable(q.status);
 
+				qm.updateQuestionStatus = function() {
+					$.get("/update-question-status", {newStatus: qm.selectedStatus(), id: qm.id()});
+				}
+			}
+
+			self.loadTags = function() {
+				$.get("/get/tags")
+				.done(function(data) {
+					$.each(data, function(i, val) {
+						console.log(val);
+						var tag = {
+							"tag_id": val[0],
+							"tag_title": val[4] + " - " + val[2],
+							"site_id": val[3]
+						}
+						self.tags2.push(new self.TagModel2(tag));
+					});
+				});
+			}
+
+			self.loadQuestionsByTag = function(tag_id) {
+				self.currentQuestions.removeAll();
+				var site_id = ko.utils.arrayFirst(self.tags2(), function(t) {
+					return t.tag_id() == tag_id;
+				}).site_id();
+				$.get("/get/questions-by-tag", {tag_id: tag_id, site_id: site_id, offset: self.offset()})
+				.done(function(data) {
+					console.log(data);
+					self.currentQuestionsCount(data['count']);
+					console.log(self.currentQuestionsCount());
+					$.each(data['questions'], function(i, val) {
+						var question = {
+							"id": val[0],
+							"link": val[1],
+							"title": val[2],
+							"date": val[3],
+							"status": val[4],
+							"tags": val[5]
+						}
+						self.currentQuestions.push(new self.QuestionModel(question));
+					});
+				})
+			}
+
+			/*
 			self.load = function() {
 				$.get("/get/questions")
 				.done(function(data) {
@@ -278,6 +409,64 @@
 					self.total_questions(data["total_questions"]);
 				});
 			}
+			*/
+
+			self.getStats = function() {
+				var total_sites = 0;
+				var total_tags = 0;
+				var total_by_tag = "";
+				var total_by_site = "";
+
+				$.get("/get/tags")
+				.done(function(data) {
+					total_tags = data.length;
+					$.each(data, function(i, val) {
+						var site_id = ko.utils.arrayFirst(self.tags2(), function(t) {
+							return t.tag_id() == val[0];
+						}).site_id();
+						$.get("/get/questions-by-tag", {tag_id: val[0], site_id: site_id, offset: 0})
+						.done(function(data2) {
+							var tag_total = "<b>" + val[2] + ' - ' + val[4] + ' - ' + "</b>" + data2['count'];
+							total_by_tag += tag_total + "<br>";
+							if (i == total_tags - 1) {
+								self.total_by_tag(total_by_tag);
+							}
+						});
+					});
+					
+					self.total_tags(total_tags);
+				});
+
+				$.get("/get/sites")
+				.done(function(data) {
+					total_sites = data.length;
+					$.each(data, function(i, val) {
+						$.get("/get/questions-by-site", {site_id: val[0], offset: 0})
+						.done(function(data2) {
+							var site_total = "<b>" + val[1] + " - " + "</b>" + data2['count'];
+							total_by_site += site_total + "<br>";
+							console.log(total_by_site);
+							if (i == total_sites - 1) {
+								self.total_by_site(total_by_site);
+							}
+						});
+					});
+					self.total_sites(total_sites);
+				});
+
+				$.get("/get/questions-count")
+				.done(function(data) {
+					self.total_questions(data["questions_count"]);
+				});
+
+				$.get("/get/status-count")
+				.done(function(data) {
+					self.total_cant_do(data['cant_count']);
+					self.total_todo(data['todo_count']);
+					self.todo_percentage((self.total_todo() * 100 / self.total_questions()).toFixed(0));
+					self.cant_do_percentage((self.total_cant_do() * 100 / self.total_questions()).toFixed(0));
+				});
+			}
 
 			self.showQuestions = function() {
 				self.stats_visible(false);
@@ -289,7 +478,11 @@
 				self.stats_visible(true);
 			}
 
+			self.loadTags();
+			self.getStats();
+			/*
 			self.load();
+			*/
 		}
 		ko.applyBindings(new AppViewModel(), document.getElementById("app"));
 	</script>
