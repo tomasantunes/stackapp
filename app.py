@@ -52,15 +52,26 @@ def get_questions_by_tag():
 	tag_id = request.args['tag_id']
 	site_id = request.args['site_id']
 	offset = request.args['offset']
-	print(offset)
 	db = connect_stackexchange_db()
-	cur = db.execute('SELECT questions.question_id, questions.link, questions.title, questions.date, questions.status, questions.tags FROM questions JOIN tags ON questions.tag = tags.tag_title JOIN sites ON questions.site = sites.site_url WHERE tags.tag_id = ? AND sites.site_id = ? ORDER BY status LIMIT 10 OFFSET ?', (tag_id, site_id, offset))
+	cur = db.execute('SELECT questions.question_id, questions.link, questions.title, questions.date, questions.status, questions.tags FROM questions JOIN tags ON questions.tag = tags.tag_title JOIN sites ON questions.site = sites.site_url WHERE tags.tag_id = ? AND sites.site_id = ? ORDER BY date DESC, status ASC LIMIT 10 OFFSET ?', (tag_id, site_id, offset))
 	questions = cur.fetchall()
 	cur = db.execute("SELECT COUNT(*) FROM questions JOIN tags ON questions.tag = tags.tag_title JOIN sites ON questions.site = sites.site_url WHERE tags.tag_id = ? AND sites.site_id = ?", (tag_id, site_id))
 	count = cur.fetchone()[0]
 	result = {
 		"count": count,
 		"questions": questions
+	}
+	return jsonify(result)
+
+@app.route('/get/count-by-tag')
+def get_count_by_tag():
+	tag_id = request.args['tag_id']
+	site_id = request.args['site_id']
+	db = connect_stackexchange_db()
+	cur = db.execute("SELECT COUNT(*) FROM questions JOIN tags ON questions.tag = tags.tag_title JOIN sites ON questions.site = sites.site_url WHERE tags.tag_id = ? AND sites.site_id = ?", (tag_id, site_id))
+	count = cur.fetchone()[0]
+	result = {
+		"count": count,
 	}
 	return jsonify(result)
 
@@ -101,6 +112,17 @@ def get_questions_by_site():
 	result = {
 		"count": count,
 		"questions": questions
+	}
+	return jsonify(result)
+
+@app.route('/get/count-by-site')
+def get_count_by_site():
+	site_id = request.args['site_id']
+	db = connect_stackexchange_db()
+	cur = db.execute("SELECT COUNT(*) FROM questions JOIN sites ON questions.site = sites.site_url WHERE sites.site_id = ?", (site_id,))
+	count = cur.fetchone()[0]
+	result = {
+		"count": count,
 	}
 	return jsonify(result)
 
