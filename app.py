@@ -144,7 +144,7 @@ def update_question_status():
 	cur = db.execute('UPDATE questions SET status = ? WHERE question_id = ?', (status, id))
 	db.commit()
 	db.close()
-	return "OK"
+	return jsonify({"status": "OK", "data": "Question status updated."});
 
 @app.route('/')
 def home():

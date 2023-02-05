@@ -36,6 +36,7 @@
 		.logo {
 		display: inline-block;
 		width: 45px;
+		margin-left: 5px;
 		}
 
 		.logo img {
@@ -229,6 +230,7 @@
 			}
 
 			self.currentTag.subscribe(function(tag) {
+				self.pageNumber(0);
 				self.loadQuestionsByTag(tag);
 			}, self);
 
@@ -276,7 +278,19 @@
 				qm.selectedStatus = ko.observable(q.status);
 
 				qm.updateQuestionStatus = function() {
-					$.get("/update-question-status", {newStatus: qm.selectedStatus(), id: qm.id()});
+					$.get("/update-question-status", {newStatus: qm.selectedStatus(), id: qm.id()})
+					.then(function(response) {
+						console.log(response);
+						if (response.status == "OK") {
+							console.log("Question status updated successfully");
+						}
+						else {
+							alert("Invalid authorization.");
+						}
+					})
+					.catch(function(err) {
+						alert("Error updating question status: " + err.message);
+					});
 				}
 			}
 
