@@ -47,6 +47,14 @@ def get_all_questions():
 	questions = cur.fetchall()
 	return jsonify(questions)
 
+@app.route('/search')
+def search():
+	searchQuery = request.args['searchQuery']
+	db = connect_stackexchange_db()
+	cur = db.execute('SELECT question_id, link, title, date, status, tags FROM questions WHERE title LIKE ? OR tags LIKE ?', ('%'+searchQuery+'%', '%'+searchQuery+'%'))
+	questions = cur.fetchall()
+	return jsonify(questions)
+
 @app.route('/get/questions-by-tag')
 def get_questions_by_tag():
 	tag_id = request.args['tag_id']

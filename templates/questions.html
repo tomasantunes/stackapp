@@ -35,8 +35,9 @@
 
 		.logo {
 		display: inline-block;
-		width: 45px;
+		width: 52px;
 		margin-left: 5px;
+		vertical-align: top;
 		}
 
 		.logo img {
@@ -49,6 +50,10 @@
 
 		button {
 			cursor: pointer !important;
+		}
+
+		.top-nav {
+			padding-top: 5px;
 		}
 
 	</style>
@@ -67,6 +72,7 @@
 			<div class="menu">
 				<a href="#" data-bind="click: showHome">Home</a>
 				<a href="#" data-bind="click: showQuestions">Questions</a>
+				<a href="#" data-bind="click: showSearch">Search</a>
 				<a href="#" data-bind="click: showStats">Stats</a>
 				<a href="javascript:void(0);" class="icon" onclick="toggleMenu()">
 					<i class="fa fa-bars"></i>
@@ -97,26 +103,21 @@
 					<button class="current" data-bind="text: $root.pageNumber"></button>
 					<button class="next" data-bind="click: next, visible: hasNext">Next</button>
 				</div>
-				<!--
-				<div id="questions" data-bind="foreach: tags">
-					<h3 data-bind="text: tag_title"></h3>
-					<div>
-						<ul data-bind="attr: {id: tag_id}, foreach: questions">
-							<li>
-								<table>
-									<tbody>
-										<tr>
-											<td style="width: 60%;"><a data-bind="attr: {href: link}, html: title"></a></td>
-											<td style="width: 25%;"><p data-bind="text: tags"></p></td>
-											<td style="width: 15%;"><select data-bind="options: $root.statuses, value: selectedStatus, optionsCaption: 'Choose...', event:{ change: updateQuestionStatus}"></select></td>
-										</tr>
-									</tbody>
-								</table>
-							</li>
-						</ul>
-					</div>
-				</div>
-				-->
+			</div>
+			<div class="stackapp-search" data-bind="hidden: search_hidden" style="display: none">
+				<h3>Search</h3>
+				<input type="text" data-bind="textInput: searchQuery" />
+				<button class="btn btn-primary" data-bind="click: search">Search</button>
+
+				<table>
+					<tbody data-bind="foreach: searchResults">
+						<tr>
+							<td style="width: 60%;"><a data-bind="attr: {href: link}, html: title"></a></td>
+							<td style="width: 25%;"><p data-bind="text: tags"></p></td>
+							<td style="width: 15%;"><select data-bind="options: $root.statuses, value: selectedStatus, optionsCaption: 'Choose...', event:{ change: updateQuestionStatus}"></select></td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 			<div class="stackapp-stats" data-bind="hidden: stats_hidden" style="display: none">
 				<h3>Total Questions: <span data-bind="text: total_questions"></span></h3>
@@ -128,10 +129,6 @@
 				<p data-bind="html: total_by_site"></p>
 				<h3>Total by tag:</h3>
 				<p data-bind="html: total_by_tag"></p>
-				<!--
-				<h3>Status by tag:</h3>
-				<p data-bind="html: status_by_tag"></p>
-				-->
 			</div>
 		</div>
 	</div>
@@ -180,6 +177,7 @@
 			self.home_hidden = ko.observable(false);
 			self.questions_hidden = ko.observable(true);
 			self.stats_hidden = ko.observable(true);
+			self.search_hidden = ko.observable(true);
 			self.total_questions = ko.observable();
 			self.total_by_tag = ko.observable();
 			self.total_by_site = ko.observable();
@@ -198,6 +196,8 @@
 			self.currentQuestionsCount = ko.observable();
 			self.tags2 = ko.observableArray();
 			self.offset = ko.observable(0);
+			self.searchQuery = ko.observable("");
+			self.searchResults = ko.observableArray([]);
 			
 			self.totalPages = ko.computed(function() {
 				var div = Math.floor(self.currentQuestionsCount() / 10);
@@ -333,101 +333,6 @@
 				}
 			}
 
-			/*
-			self.load = function() {
-				$.get("/get/questions")
-				.done(function(data) {
-					if (data.length > 0) {
-						data = sortQuestions(data);
-						var status_by_tag = "";
-						var total_cant_do = 0;
-						var total_todo = 0;
-						var total_questions = 0;
-						$.each(Object.keys(data), function(k, val) {
-							$.each(Object.keys(data[val]), function(i, val2){
-								var tag = {
-									"tag_title": val + ' - ' + val2,
-									"tag_id": data[val][val2][0][0],
-									"questions": []
-								};
-
-								
-								var count_todo = 0;
-								var count_cant_do = 0;
-								var count_questions = 0;
-								$.each(data[val][val2], function(i, val3) {
-									tag.questions.push({"id": val3[0], "link": val3[3], "title": val3[4], "status": val3[6], "tags": val3[7]});
-									if (val3[6] == "I can't do this") {
-										count_cant_do += 1;
-										total_cant_do += 1;
-									}
-									else if (val3[6] == "TODO") {
-										count_todo += 1;
-										total_todo += 1;
-									}
-									count_questions += 1;
-									total_questions += 1;
-								});
-								status_by_tag += "<b>" + val + ' - ' + val2 + ' - </b>' + "CANT_DO: " + count_cant_do + "(" + (count_cant_do * 100 / count_questions).toFixed(0) + "%), TODO: " + count_todo + "(" + (count_todo * 100 / count_questions).toFixed(0) + "%)" + "<br>";
-
-								var order = {
-									"I can't do this": 0,
-									"Done": 1,
-									"TODO": 2,
-								}
-								tag.questions.sort(function(a, b) {
-									var a_status = order[a.status];
-									var b_status = order[b.status];
-
-									if (a.status == null) {
-										a_status = 3;
-									}
-									if (b.status == null) {
-										b_status = 3
-									}
-									return a_status - b_status;
-								});
-
-								self.tags.push(new self.TagModel(tag));
-							});
-						});
-						$( "#questions" ).accordion({heightStyle: "content", collapsible: true, active: false, header: 'h3'});
-						var total_sites = 0;
-						var total_tags = 0;
-						var total_by_tag = "";
-						var total_by_site = "";
-						$.each(Object.keys(data), function(i, val) {
-							total_sites += 1;
-							var site_questions_count = 0;
-							$.each(Object.keys(data[val]), function(i, val2){
-								total_tags += 1;
-								var tag_total = "<b>" + val + ' - ' + val2 + ' - ' + "</b>" + data[val][val2].length;
-								site_questions_count += data[val][val2].length;
-								total_by_tag += tag_total + "<br>";
-							});
-							var site_total = "<b>" + val + " - " + "</b>" + site_questions_count;
-							total_by_site += site_total + "<br>";
-						});
-						self.total_by_tag(total_by_tag);
-						self.status_by_tag(status_by_tag);
-						self.total_by_site(total_by_site);
-						self.total_sites(total_sites);
-						self.total_tags(total_tags);
-						self.total_cant_do(total_cant_do);
-						self.total_todo(total_todo);
-						self.todo_percentage((total_todo * 100 / total_questions).toFixed(0));
-						self.cant_do_percentage((total_cant_do * 100 / total_questions).toFixed(0));
-					}
-					self.questions_visible(false);
-					self.stats_visible(false);
-				});
-				$.get("/get/stats")
-				.done(function(data) {
-					self.total_questions(data["total_questions"]);
-				});
-			}
-			*/
-
 			self.getStats = function() {
 				var total_sites = 0;
 				var total_tags = 0;
@@ -484,16 +389,36 @@
 				});
 			}
 
+			self.search = function() {
+				self.searchResults.removeAll();
+				$.get("/search", {searchQuery: self.searchQuery()})
+				.done(function(data) {
+					$.each(data, function(i, val) {
+						var question = {
+							"id": val[0],
+							"link": val[1],
+							"title": val[2],
+							"date": val[3],
+							"status": val[4],
+							"tags": val[5]
+						}
+						self.searchResults.push(new self.QuestionModel(question));
+					});
+				})
+			}
+
 			self.showHome = function() {
 				self.home_hidden(false);
 				self.questions_hidden(true);
 				self.stats_hidden(true);
+				self.search_hidden(true);
 			}
 
 			self.showQuestions = function() {
 				self.home_hidden(true);
 				self.questions_hidden(false);
 				self.stats_hidden(true);
+				self.search_hidden(true);
 				self.loadTags();
 			}
 
@@ -501,8 +426,16 @@
 				self.home_hidden(true);
 				self.questions_hidden(true);
 				self.stats_hidden(false);
+				self.search_hidden(true);
 				self.loadTags();
 				self.getStats();
+			}
+
+			self.showSearch = function() {
+				self.home_hidden(true);
+				self.questions_hidden(true);
+				self.stats_hidden(true);
+				self.search_hidden(false);
 			}
 
 			self.showHome();
