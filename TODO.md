@@ -1,3 +1,3 @@
 # TODO
 
-- Remove top margin from menu items
+- Corrigir erro na nomeação das tags no front-end.
