@@ -129,6 +129,9 @@
 				<p data-bind="html: total_by_site"></p>
 				<h3>Total by tag:</h3>
 				<p data-bind="html: total_by_tag"></p>
+				<ul data-bind="foreach: question_log">
+					<li><span data-bind="text: message"></span><small data-bind="text: date"></small></li>
+				</ul>
 			</div>
 		</div>
 	</div>
@@ -198,6 +201,7 @@
 			self.offset = ko.observable(0);
 			self.searchQuery = ko.observable("");
 			self.searchResults = ko.observableArray([]);
+			self.question_log = ko.observableArray([]);
 			
 			self.totalPages = ko.computed(function() {
 				var div = Math.floor(self.currentQuestionsCount() / 10);
@@ -267,6 +271,12 @@
 				}
 
 				tm.loadQuestions();
+			}
+
+			self.QuestionLogModel = function(ql) {
+				var qlm = this;
+				qlm.message = ql.message;
+				qlm.date = ql.date;
 			}
 
 			self.QuestionModel = function(q) {
@@ -386,6 +396,13 @@
 					self.total_todo(data['todo_count']);
 					self.todo_percentage((self.total_todo() * 100 / self.total_questions()).toFixed(0));
 					self.cant_do_percentage((self.total_cant_do() * 100 / self.total_questions()).toFixed(0));
+				});
+
+				$.get("/get/question_log")
+				.done(function(data) {
+					$.each(data, function(i, val) {
+						self.question_log.push(new self.QuestionLogModel(val));
+					});
 				});
 			}
 

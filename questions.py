@@ -27,6 +27,7 @@ def connect_db():
 db = connect_db()
 
 MAX_RETRIES = 20
+count = 0
 
 s = requests.Session()
 adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
@@ -84,8 +85,12 @@ for tag in tags:
 				tags_str = ",".join(tags)
 				db.execute('INSERT INTO questions (question_id, site, tag, link, title, date, tags) VALUES (?, ?, ?, ?, ?, ?, ?)', [question['question_id'], str(tag['site']), str(tag['tag']), question['link'], str(question["title"]), question['creation_date'], tags_str])
 				db.commit()
+				count += 1
 		print("Questions have been saved to database.")
 	else:
 		print("This tag has no results.")
+
+db.execute("INSERT INTO question_log (message, date) VALUES (?, DATETIME('now'))", ["+" + str(count) + " questions have been added."])
+db.commit()
 
 print("Finished.")

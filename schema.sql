@@ -18,5 +18,10 @@ CREATE TABLE tags(
     tag_title TEXT
 );
 
+CREATE TABLE question_log(
+    message TEXT
+    date TEXT
+);
+
 ALTER TABLE questions ADD COLUMN status TEXT;
 ALTER TABLE questions ADD COLUMN tags TEXT;

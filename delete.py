@@ -23,6 +23,7 @@ questions = cur.fetchall()
 questions_to_delete = []
 questions_obj = {}
 compare_date = datetime.now() - timedelta(days=1)
+count = 0
 
 for q in questions:
 	if q[1] not in questions_obj.keys():
@@ -72,6 +73,10 @@ for k in questions_obj.keys():
 for q in questions_to_delete:
 	db.execute('DELETE FROM questions WHERE question_id = ?', [q])
 	db.commit()
+	count += 1
 	print("Question deleted.")
+
+db.execute("INSERT INTO question_log (message, date) VALUES (?, DATETIME('now'))", [str(count) + " questions have been deleted."])
+db.commit()
 
 print("Finished.")

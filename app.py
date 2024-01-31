@@ -141,6 +141,13 @@ def get_stats():
 	total_questions = cur.fetchone()[0]
 	return jsonify({"total_questions": total_questions})
 
+@app.route('/get/question-log')
+def get_question_log():
+	db = connect_stackexchange_db()
+	cur = db.execute('SELECT * FROM question_log')
+	question_log = cur.fetchall()
+	return jsonify(question_log)
+
 @app.route("/update-question-status")
 def update_question_status():
 	if not session.get('isLoggedIn'):
