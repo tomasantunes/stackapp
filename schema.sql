@@ -19,7 +19,7 @@ CREATE TABLE tags(
 );
 
 CREATE TABLE question_log(
-    message TEXT
+    message TEXT,
     date TEXT
 );
 
