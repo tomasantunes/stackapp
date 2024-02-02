@@ -129,8 +129,9 @@
 				<p data-bind="html: total_by_site"></p>
 				<h3>Total by tag:</h3>
 				<p data-bind="html: total_by_tag"></p>
+				<h3>Question Log:</h3>
 				<ul data-bind="foreach: question_log">
-					<li><span data-bind="text: message"></span><small data-bind="text: date"></small></li>
+					<li><small data-bind="text: date" style="font-weight: bold;"></small> <span data-bind="text: message"></span></li>
 				</ul>
 			</div>
 		</div>
@@ -275,8 +276,8 @@
 
 			self.QuestionLogModel = function(ql) {
 				var qlm = this;
-				qlm.message = ql.message;
-				qlm.date = ql.date;
+				qlm.message = ql[0];
+				qlm.date = ql[1];
 			}
 
 			self.QuestionModel = function(q) {
@@ -398,7 +399,7 @@
 					self.cant_do_percentage((self.total_cant_do() * 100 / self.total_questions()).toFixed(0));
 				});
 
-				$.get("/get/question_log")
+				$.get("/get/question-log")
 				.done(function(data) {
 					$.each(data, function(i, val) {
 						self.question_log.push(new self.QuestionLogModel(val));

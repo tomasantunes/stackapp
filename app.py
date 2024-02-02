@@ -144,7 +144,7 @@ def get_stats():
 @app.route('/get/question-log')
 def get_question_log():
 	db = connect_stackexchange_db()
-	cur = db.execute('SELECT * FROM question_log')
+	cur = db.execute('SELECT question_log.* FROM question_log ORDER BY DATE(question_log.date) DESC LIMIT 10')
 	question_log = cur.fetchall()
 	return jsonify(question_log)
 
